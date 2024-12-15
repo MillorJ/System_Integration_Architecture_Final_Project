@@ -1,0 +1,35 @@
+const jwt = require('jsonwebtoken');
+
+// Authenticate Token Middleware
+function authenticateToken(req, res, next) {
+    const token = req.header('Authorization');
+    if (!token) return res.status(401).json({ message: 'Unauthorized: No token provided' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify JWT
+        req.user = decoded; // `decoded` should include user info like { id, role, etc. }
+        next();
+    } catch (err) {
+        res.status(403).json({ message: 'Forbidden: Invalid token' });
+    }
+}
+
+// Authorize Roles Middleware
+function authorizeRoles(...allowedRoles) {
+    return (req, res, next) => {
+        // Assuming the user's role is stored in req.user.role (after authentication)
+        const userRole = req.user?.role;
+
+        if (!userRole) {
+            return res.status(401).json({ message: 'Unauthorized: Role not found' });
+        }
+
+        if (!allowedRoles.includes(userRole)) {
+            return res.status(403).json({ message: 'Forbidden: Insufficient permissions' });
+        }
+
+        next();
+    };
+}
+
+module.exports = { authenticateToken, authorizeRoles };

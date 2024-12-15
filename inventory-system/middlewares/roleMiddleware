@@ -1,0 +1,14 @@
+// middleware/roleMiddleware.js
+const checkRole = (...allowedRoles) => {
+    return (req, res, next) => {
+        const userRole = req.user.role; // Assuming you have a `user` object attached to `req` that contains the role
+        
+        if (!allowedRoles.includes(userRole)) {
+            return res.status(403).json({ message: 'Access forbidden: You do not have the required role' });
+        }
+
+        next(); // User has the correct role, proceed with the request
+    };
+};
+
+module.exports = checkRole;

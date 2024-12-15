@@ -1,6 +1,8 @@
 const express = require('express');
 const promClient = require('prom-client');
-const logger = require('../shared/utils/logger'); // Use shared logger
+const logger = require('../../shared/utils/logger'); // Use shared logger
+const { createProxyMiddleware } = require('http-proxy-middleware'); // Import proxy middleware
+const config = require('./config/gatewayConfig'); // Import the config file for services
 const app = express();
 
 // Initialize Prometheus registry
@@ -30,11 +32,16 @@ app.get('/metrics', async (req, res) => {
     res.end(await register.metrics());
 });
 
-// Example routes for API Gateway
-app.get('/api/crm', (req, res) => {
-    // Your code for CRM-related functionality
-    res.send('CRM data');
-});
+// Proxy routes dynamically based on config
+for (const [serviceName, serviceUrl] of Object.entries(config.services)) {
+    app.use( createProxyMiddleware({
+        target: serviceUrl, // Service URL from the config
+        changeOrigin: true,
+        pathRewrite: {
+            [`^/api/${serviceName}`]: '', // Remove '/api/{serviceName}' from the path before forwarding
+        }
+    }));
+}
 
 // Start the server
 const port = 3000;
