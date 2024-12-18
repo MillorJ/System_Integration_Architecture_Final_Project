@@ -7,6 +7,7 @@ const {
     updateTicketStatus,
 } = require('../services/supportService');
 const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware'); // Authentication and Authorization middleware
+const Ticket = require('../models/Ticket'); // Ensure the path is correct
 
 // Apply authentication to all routes
 router.use(authenticateToken); // Ensure the user is authenticated first
@@ -64,15 +65,13 @@ router.delete('/:id', authorizeRoles('support manager', 'admin'), async (req, re
         // Attempt to delete the ticket by its ID
         const deletedTicket = await Ticket.findByIdAndDelete(req.params.id);
 
-        // If no ticket is found to delete, send a 404 response
         if (!deletedTicket) {
             return res.status(404).json({ error: 'Ticket not found' });
         }
 
-        // Send a success response with the deleted ticket data
         res.status(200).json({ message: 'Ticket deleted successfully', ticket: deletedTicket });
     } catch (error) {
-        next(error); // Pass the error to the errorHandler middleware
+        next(error); // Pass the error to errorHandler middleware
     }
 });
 
