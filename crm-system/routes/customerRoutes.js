@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CustomerService = require('../services/customerService');
-const { authenticateToken, authorizeRoles } = require('../middleware/customerMiddleware'); // Import the middlewares
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // Apply authentication and role-based authorization to all routes below
 router.use(authenticateToken); // First, authenticate the user

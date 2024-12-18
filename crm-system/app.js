@@ -1,4 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const supportRoutes = require('./routes/customerRoutes'); // Assuming you have support-related routes
+
+const { generateDefaultTokens } = require('./middleware/authMiddleware');
 const promClient = require('prom-client');
 const logger = require('../shared/utils/logger');
 const app = express();
@@ -30,14 +34,30 @@ app.get('/metrics', async (req, res) => {
     res.end(await register.metrics());
 });
 
-// Example routes for CRM System
-app.get('/api/customers', (req, res) => {
-    // Your code for CRM-related functionality
-    res.send('Customer data');
-});
+// Middleware to parse JSON requests
+app.use(express.json());
 
-// Start the server
-const port = 3001;
-app.listen(port, () => {
-    logger.info(`CRM System is running on port ${port}`);
+// Define the PORT
+const PORT = process.env.PORT || 3001;
+
+// Generate Default Tokens
+const tokens = generateDefaultTokens();
+console.log('Default Tokens:');
+console.log('Admin Token:', tokens.admin);
+console.log('Sales Agent Token:', tokens.salesAgent);
+
+// Database Connection
+mongoose
+    .connect('mongodb://localhost:27017/crm_system')
+    .then(() => console.log(`Connected to CRM System Database and is running on port ${PORT}`))
+    .catch((err) => console.error('Database connection error:', err));
+
+// Routes
+// Use support-related routes (assuming you have defined supportRoutes)
+app.use('/api/support', supportRoutes);
+
+
+// Start Server
+app.listen(PORT, () => {
+    logger.info(`CRM System is running on port ${PORT}`);
 });

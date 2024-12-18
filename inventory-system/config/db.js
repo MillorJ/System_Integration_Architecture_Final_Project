@@ -5,10 +5,7 @@ const DB_URI = process.env.INVENTORY_DB_URI || 'mongodb://localhost:27017/invent
 
 const connectDB = async () => {
     try {
-        await mongoose.connect(DB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        });
+        await mongoose.connect(DB_URI); // Removed deprecated options
         console.log('Connected to Inventory Database successfully');
     } catch (error) {
         console.error('Error connecting to Inventory Database:', error.message);

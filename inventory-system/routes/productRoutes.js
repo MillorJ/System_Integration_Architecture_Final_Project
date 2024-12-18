@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const InventoryService = require('../services/inventoryService');
-const checkRole = require('../middleware/roleMiddleware'); // Import the role-based access control middleware
-const authenticateToken = require('../middleware/authMiddleware'); // Import the authentication middleware
+const { authenticateToken, authorizeRoles } = require('../middlewares/authMiddleware');
+const checkRole = require('../middlewares/roleMiddleware');
 
 // Use the authentication middleware for all routes in this file
-router.use(authenticateToken); 
+router.use(authenticateToken);
 
 // Get all products (restricted to admin and product manager)
-router.get('/', checkRole('admin', 'product manager'), async (req, res) => {
+router.get('/', authorizeRoles('admin', 'product manager'), async (req, res) => {
     try {
         const products = await InventoryService.getAllProducts();
         res.json(products);
@@ -18,7 +18,7 @@ router.get('/', checkRole('admin', 'product manager'), async (req, res) => {
 });
 
 // Get a single product by ID (restricted to admin and product manager)
-router.get('/:id', checkRole('admin', 'product manager'), async (req, res) => {
+router.get('/:id', authorizeRoles('admin', 'product manager'), async (req, res) => {
     try {
         const product = await InventoryService.getProductById(req.params.id);
         if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -29,7 +29,7 @@ router.get('/:id', checkRole('admin', 'product manager'), async (req, res) => {
 });
 
 // Create a new product (restricted to admin and product manager)
-router.post('/', checkRole('admin', 'product manager'), async (req, res) => {
+router.post('/', authorizeRoles('admin', 'product manager'), async (req, res) => {
     try {
         const product = await InventoryService.createProduct(req.body);
         res.status(201).json(product);
@@ -39,7 +39,7 @@ router.post('/', checkRole('admin', 'product manager'), async (req, res) => {
 });
 
 // Update an existing product (restricted to admin and product manager)
-router.put('/:id', checkRole('admin', 'product manager'), async (req, res) => {
+router.put('/:id', authorizeRoles('admin', 'product manager'), async (req, res) => {
     try {
         const product = await InventoryService.updateProduct(req.params.id, req.body);
         if (!product) return res.status(404).json({ message: 'Product not found' });
@@ -50,7 +50,7 @@ router.put('/:id', checkRole('admin', 'product manager'), async (req, res) => {
 });
 
 // Delete a product (restricted to admin and product manager)
-router.delete('/:id', checkRole('admin', 'product manager'), async (req, res) => {
+router.delete('/:id', authorizeRoles('admin', 'product manager'), async (req, res) => {
     try {
         const result = await InventoryService.deleteProduct(req.params.id);
         if (!result) return res.status(404).json({ message: 'Product not found' });
